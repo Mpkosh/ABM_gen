@@ -471,17 +471,14 @@ def main_function(number_seed, data_folder, dataset, dict_school_id_all, lmbd, i
             
         print()
         df_results = pd.DataFrame.from_dict(results_dic)
-        
-        df_results.to_csv(
-            'sampled_200k_res/' + r'/prevalence_seed_{}.csv'.format(number_seed), sep='\t', index=False)
+        df_results.to_csv(f'sampled_200k_res/prevalence_seed_{number_seed}.csv', sep='\t', index=False)
         
         
         df_incidence = pd.DataFrame(new_results_dic)
+        df_incidence.to_csv(f'sampled_200k_res/incidence_seed_{number_seed}.csv', sep='\t', index=False)
         
-        df_incidence.to_csv(
-            'sampled_200k_res/' + r'/incidence_seed_{}.csv'.format(number_seed), sep='\t', index=False)
         SEIRb_day = SEIRb_day.replace([np.inf, -np.inf], np.nan).fillna(0) 
-        SEIRb_day.to_csv('sampled_200k_res/' + r'/seirb_seed_{}.csv'.format(number_seed), sep='\t', index=False)
+        SEIRb_day.to_csv(f'sampled_200k_res/seirb_seed_{number_seed}.csv', sep='\t', index=False)
         
         data_current.loc[data_current.infected >
                          0, 'illness_day'] += 1  # Time goes
@@ -532,23 +529,11 @@ if __name__ == '__main__':
     infected_init_dic = {'H1N1': 10, 'H3N2': 0, 'B': 0}
     alpha_dic = {'H1N1': 0.78, 'H3N2': 0.74, 'B': 0.6} # H1N1 was 0.78
     lmbd = 0.2 # was 0.3
-    num_runs = 1#30
+    num_runs = 1
     days = range(1, 3)#range(1, 250)
     strains_keys = ['H1N1', 'H3N2', 'B']
 
-    # in data folder schould be 3 files: 'people.txt', 'households.txt', 'schools.json'
-    # TODO problem with saving files -- solve issue with path
-    #root = 'C:/'
-    #user = 'EGuseva/'
-    #files = 'crazy_lmbd/'
     data_folder = 'sampled_200k/'
-    #data_path = root + user + files + 'data/' + data_folder
-    #results_dir = root + user + files + 'aresults/' + data_folder
-    #n='new_crazy_lmbd'
-    #es='results'
-    #data_path=f'C:/EGuseva/{n}/data/sampled_200k/'
-    #results_dir = f'C:/EGuseva/{n}/{es}/sampled_200k/'
-    
     data_path = 'sampled_200k/'
     results_dir = 'sampled_200k_res/'
 
