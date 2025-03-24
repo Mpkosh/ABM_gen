@@ -529,8 +529,8 @@ if __name__ == '__main__':
     infected_init_dic = {'H1N1': 10, 'H3N2': 0, 'B': 0}
     alpha_dic = {'H1N1': 0.78, 'H3N2': 0.74, 'B': 0.6} # H1N1 was 0.78
     lmbd = 0.2 # was 0.3
-    num_runs = 1
-    days = range(1, 3)#range(1, 250)
+    num_runs = 30
+    days = range(1, 250)
     strains_keys = ['H1N1', 'H3N2', 'B']
 
     data_folder = 'sampled_200k/'
