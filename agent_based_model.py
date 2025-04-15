@@ -23,7 +23,7 @@ pd.options.display.max_columns = None
 
 
 def load_data(data_path, frac=1):
-    data = pd.read_csv(data_path + 'people.txt', sep='\t', index_col=0)
+    data = pd.read_csv(data_path + 'people.txt', sep='\t')
     data = data[['sp_id', 'sp_hh_id', 'age', 'sex', 'work_id']]
     data=data.sample(frac=frac)
     households = pd.read_csv(data_path + 'households.txt', sep='\t')
