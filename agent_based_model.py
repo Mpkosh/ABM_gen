@@ -471,14 +471,14 @@ def main_function(number_seed, data_folder, dataset, dict_school_id_all, lmbd, i
             
         print()
         df_results = pd.DataFrame.from_dict(results_dic)
-        df_results.to_csv(f'sampled_200k_res/prevalence_seed_{number_seed}.csv', sep='\t', index=False)
+        df_results.to_csv(f'{data_folder}prevalence_seed_{number_seed}.csv', sep='\t', index=False)
         
         
         df_incidence = pd.DataFrame(new_results_dic)
-        df_incidence.to_csv(f'sampled_200k_res/incidence_seed_{number_seed}.csv', sep='\t', index=False)
+        df_incidence.to_csv(f'{data_folder}incidence_seed_{number_seed}.csv', sep='\t', index=False)
         
         SEIRb_day = SEIRb_day.replace([np.inf, -np.inf], np.nan).fillna(0) 
-        SEIRb_day.to_csv(f'sampled_200k_res/seirb_seed_{number_seed}.csv', sep='\t', index=False)
+        SEIRb_day.to_csv(f'{data_folder}seirb_seed_{number_seed}.csv', sep='\t', index=False)
         
         data_current.loc[data_current.infected >
                          0, 'illness_day'] += 1  # Time goes
@@ -534,8 +534,8 @@ if __name__ == '__main__':
     strains_keys = ['H1N1', 'H3N2', 'B']
 
     data_folder = 'sampled_200k/'
-    data_path = 'sampled_200k/'
-    results_dir = 'sampled_200k_res/'
+    data_path = data_folder
+    results_dir = f'{data_folder}_res/'
 
     if not os.path.exists(results_dir):
         os.makedirs(results_dir)
