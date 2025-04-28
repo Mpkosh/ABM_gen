@@ -192,7 +192,7 @@ def main_function(number_seed, data_folder, dataset, dict_school_id_all, lmbd, i
     beta_day_values.index = days
     '''
     # словарь для фиксирования предыдущих значений S
-    #S_prev_per_strain = dict(zip(strains_keys, [0]*len(strains_keys)))
+    S_prev_per_strain = dict(zip(strains_keys, [0]*len(strains_keys)))
     
     # dataset со всеми данными на каждый день
     cols = ['S','E','I','R','beta']
@@ -446,6 +446,8 @@ def main_function(number_seed, data_folder, dataset, dict_school_id_all, lmbd, i
             '''
             
             S = data_current[f'susceptible_{key}'].sum()
+            
+            
             # т.к. на 1-м и 2-м дне заразить не может (по ф-ии func_b_r)
             E = data_current[(data_current.infected == infIndexForStrain(key)) & (
                               data_current.illness_day <= 2)].shape[0]
@@ -457,10 +459,13 @@ def main_function(number_seed, data_folder, dataset, dict_school_id_all, lmbd, i
             new_i = data_current[(data_current.infected == infIndexForStrain(key)) & (
                               data_current.illness_day ==3)].shape[0]
             
-            beta_value = new_i / (S*I)
+            delta_S = S - S_prev_per_strain[key]
+            beta_value = - delta_S / (S*I)
+            S_prev_per_strain[key] = S
 
             key_cols = [f'{col}_{key}' for col in cols]
             SEIRb_day.loc[j, key_cols] = [S, E, I, R, beta_value]
+            
 
             # ___________________________________________________
             
