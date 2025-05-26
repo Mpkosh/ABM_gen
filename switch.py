@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from scipy.spatial import ConvexHull
 import seir_discrete
 from sklearn.metrics import root_mean_squared_error as rmse
+import matplotlib as mpl
 
 
 def cpoint_perc_people(seed_df, perc=0.01, popul=200000):
@@ -84,15 +85,15 @@ def constant_betas_all(days_before=10, sigma=1/2, gamma=1/6,
             predicted_peakt = Ipt.argmax()+st_day
             predicted_peakh = Ipt.max()
             pt_1.append(predicted_peakt-real_peakt)
-            ph_1.append(predicted_peakh-real_peakh)
+            ph_1.append(predicted_peakh/real_peakh)
             
             predicted_peakt = Iph.argmax()+st_day
             predicted_peakh = Iph.max()
             pt_2.append(predicted_peakt-real_peakt)
-            ph_2.append(predicted_peakh-real_peakh)
+            ph_2.append(predicted_peakh/real_peakh)
                 
             if plot:
-                ax.plot(df_b.I_H1N1, color='tab:blue', marker='.', ls='')
+                ax.plot(df_b.I_H1N1, color='tab:blue', ls='-')
 
                 ax.plot(ts+st_day, Ipt, color='yellow', ls='-', alpha=1, lw=2,
                     label=f'I; best beta (peaktime) {best_b_peak_time:.7f}') 
@@ -117,9 +118,12 @@ def constant_betas_all(days_before=10, sigma=1/2, gamma=1/6,
                     ax.set_xlim(-2, last[0]+10)
                 
     fig.tight_layout()
+    plt.savefig(f'results/{folder}_constant_all.pdf', 
+                    format='pdf', bbox_inches='tight')
     plot_peaks_area(pts = [pt_2], 
                     phs = [ph_2],
-                    labels=['best_by_ph'])
+                    labels=['Beta (best by peak height)'], 
+                    label_p=f'_allconstant_{folder}')
     
     
 def constant_betas(seed=0, days_before=10, sigma=1/2, gamma=1/6,
@@ -200,9 +204,8 @@ def constant_betas(seed=0, days_before=10, sigma=1/2, gamma=1/6,
 
     
 def plot_hybrid(switch_method='frac_people', perc=0.01, 
-                sigma=1/2, gamma=1/6, plot_traj=True):
-    
-    folder = 'sampled_200k_res_recalc'
+                sigma=1/2, gamma=1/6, plot_traj=True, folder= 'sampled_200k_res_recalc'):
+
     if plot_traj:
         fig, axes = plt.subplots(15, 2, figsize=(12, 35))
         axes = axes.flatten()
@@ -218,13 +221,15 @@ def plot_hybrid(switch_method='frac_people', perc=0.01,
         df_b = pd.read_csv(f'{folder}/seirb_seed_{seed}.csv')
         #inc = pd.read_csv(f'{folder}/incidence_seed_{i}.csv', sep='\t')['H1N1']
         
-        fin = 250
+        fin = df_b.shape[0]
         
         # выбираем способ переключения
         if switch_method=='frac_people':
-            st_day = cpoint_perc_people(df_b, perc=perc)
+            st_day = cpoint_perc_people(df_b, perc=perc, 
+                                        popul=df_b.iloc[0,:4].sum())
         else:
-            st_day = switch_method
+            real_peakt = df_b.I_H1N1.argmax()
+            st_day = real_peakt - switch_method
             
         
         if st_day > 0:
@@ -276,19 +281,26 @@ def plot_hybrid(switch_method='frac_people', perc=0.01,
                 predicted_peakt = I.argmax()+st_day
                 predicted_peakh = I.max()
                 pt_l.append(predicted_peakt-real_peakt)
-                ph_l.append(predicted_peakh-real_peakh)
+                ph_l.append(predicted_peakh/real_peakh)
                 
             if plot_traj:    
                 ax.legend()    
                 ax.grid()
                 ax.set_title(f'Seed {seed}, switch on day {st_day}')
+                
+                if folder=='sampled_200k_recalc':
+                    ax.set_xlim(-5, 100)
+
     
     if plot_traj:
         fig.tight_layout()
+        plt.savefig(f'results/{folder}_all.pdf', 
+                    format='pdf', bbox_inches='tight')
     
     plot_peaks_area(pts = [pt_1,pt_2,pt_3], 
                     phs = [ph_1,ph_2,ph_3],
-                    labels=['expanding','rolling','real'])
+                    labels=['Expanding mean beta','Rolling mean beta',
+                            'Last value beta'])
     
     return [[pt_1,pt_2,pt_3], [ph_1,ph_2,ph_3], chosen_st, real_peaks]
     
@@ -348,7 +360,7 @@ def plot_hybrid_3(switch_method='frac_people', perc=0.01,
             predicted_peakt = I.argmax()+st_day
             predicted_peakh = I.max()
             pt_1.append(predicted_peakt-real_peakt)
-            ph_1.append(predicted_peakh-real_peakh)
+            ph_1.append(predicted_peakh/real_peakh)
 
             ts = np.arange(fin)
             y0 = df_b.iloc[0,:4].values
@@ -364,7 +376,7 @@ def plot_hybrid_3(switch_method='frac_people', perc=0.01,
             predicted_peakt = I.argmax()
             predicted_peakh = I.max()
             pt_2.append(predicted_peakt-real_peakt)
-            ph_2.append(predicted_peakh-real_peakh)
+            ph_2.append(predicted_peakh/real_peakh)
 
             
             # ____ до дня переключения реальная бета, после -- expanding mean
@@ -377,15 +389,18 @@ def plot_hybrid_3(switch_method='frac_people', perc=0.01,
             predicted_peakt = I.argmax()
             predicted_peakh = I.max()
             pt_3.append(predicted_peakt-real_peakt)
-            ph_3.append(predicted_peakh-real_peakh)
+            ph_3.append(predicted_peakh/real_peakh)
 
             ax.legend()    
             ax.grid()
+            
+            if folder=='sampled_200k_recalc':
+                ax.set_xlim(-10, 100)
 
             ax.set_title(f'Seed {seed}, switch on day {st_day}')
 
     fig.tight_layout()
-    
+
     plot_peaks_area(pts = [pt_1,pt_2,pt_3], 
                     phs = [ph_1,ph_2,ph_3])
     return [[pt_1,pt_2,pt_3], [ph_1,ph_2,ph_3]]
@@ -394,22 +409,30 @@ def plot_hybrid_3(switch_method='frac_people', perc=0.01,
 def plot_peaks_area(pts, phs, labels=['SEIR I (from switch, smooth beta)',
                                          'SEIR I (from day 0, smooth beta)',
                                          'SEIR I (from day 0, beta)'],
-                   colors = ['tab:red','tab:orange','tab:green']):
+                   colors = ['tab:red','tab:orange','tab:green'],
+                   label_p=''):
+    #cmap = mpl.colormaps['Set2']
+    # Take colors at regular intervals spanning the colormap.
+    #colors = cmap(np.linspace(0, 1, len(pts)))
+    #colors = list(colors)
+    #colors = cmap.colors[2:len(pts)+2]
+    
     fig, ax = plt.subplots(1, 1, figsize=(5, 4))
-    ax.axhline(0, lw=1.5, ls=':')
-    ax.axvline(0, lw=1.5, ls=':')
+    ax.axhline(1, lw=1.5, ls=':', color='black')
+    ax.axvline(0, lw=1.5, ls=':', color='black')
     
     for pt_val, ph_val, color, label in zip(pts, phs, colors, labels):
         pt = pd.Series(pt_val)
         ph = pd.Series(ph_val)
-        ax.scatter(pt, ph, color=color, alpha = 0.6, label=label)
+        ax.scatter(pt, ph, color=color, alpha = 0.7, label=label)
 
         hull = ConvexHull(pd.concat([pt,ph], axis=1))
         ax.fill(pt.iloc[hull.vertices], 
-                     ph.iloc[hull.vertices], alpha=0.2, color=color)
+                     ph.iloc[hull.vertices], alpha=0.3, color=color)
         
     ax.grid()
-    ax.set_xlabel('predicted - real time')
-    ax.set_ylabel('predicted - real height')
-    ax.set_title('peak metrics for beta')
+    ax.set_xlabel('Peak time difference')
+    ax.set_ylabel('Peak height ratio')
+    #ax.set_title('peak metrics for beta')
     ax.legend()
+    plt.savefig(f'results/peaks_area{label_p}.pdf', format='pdf', bbox_inches='tight')
